@@ -64,7 +64,7 @@ pipeline {
 
     stage('Stage - 6 - Fix Vulnerability by Snyk') {
       steps {
-        withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) { 
+        withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
           sh '''
             mkdir -p snyk_scan
             cd snyk_scan
@@ -79,11 +79,18 @@ pipeline {
 
     stage('Stage - 7 - Push to Artifact Registry') {
       steps {
-        withCredentials([file(credentialsId: 'gcp-sa-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+        withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GCLOUD_KEY')]) {
           sh '''
-            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
-            gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
-            docker push ${FULL_IMAGE_NAME}
+            echo "🔐 Authenticating to GCP..."
+            gcloud auth activate-service-account --key-file=$GCLOUD_KEY
+            gcloud config set project sylvan-hydra-464904-d9
+            gcloud auth configure-docker asia-south1-docker.pkg.dev --quiet
+
+            echo "🐳 Building Docker image..."
+            docker build -t asia-south1-docker.pkg.dev/sylvan-hydra-464904-d9/devops-app/myapp:latest .
+
+            echo "📦 Pushing Docker image to Artifact Registry..."
+            docker push asia-south1-docker.pkg.dev/sylvan-hydra-464904-d9/devops-app/myapp:latest
           '''
         }
       }
@@ -114,7 +121,7 @@ pipeline {
 
     stage('Stage - 9 - Deploy to Cloud Run') {
       steps {
-        withCredentials([file(credentialsId: 'gcp-sa-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+        withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
           sh '''
             gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
             gcloud config set project ${PROJECT_ID}
