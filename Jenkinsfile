@@ -64,12 +64,14 @@ pipeline {
 
     stage('Stage - 6 - Fix Vulnerability by Snyk') {
       steps {
-        withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
+        withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) { 
           sh '''
-            npm install -g snyk
-            snyk auth $SNYK_TOKEN
-            snyk test --severity-threshold=high || true
-            snyk monitor || true
+            mkdir -p snyk_scan
+            cd snyk_scan
+            npm init -y
+            npm install snyk
+            npx snyk auth $SNYK_TOKEN
+            npx snyk test
           '''
         }
       }
