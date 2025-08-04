@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     PROJECT_ID = 'sylvan-hydra-464904-d9'
-    REGION = 'asia-south1'
+    REGION = 'us-central1'
     REPO = 'devops-app'
     IMAGE_NAME = 'user-management-app'
     FULL_IMAGE_NAME = "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${IMAGE_NAME}"
