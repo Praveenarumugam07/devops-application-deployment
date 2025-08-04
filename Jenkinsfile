@@ -6,7 +6,7 @@ pipeline {
     REGION = 'us-central1'
     REGION1 = 'asia-south1'
     REPO = 'devops-app'
-    IMAGE_NAME = 'myapp'
+    IMAGE_NAME = 'user-management-app'
     FULL_IMAGE_NAME = "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${IMAGE_NAME}"
     INSTANCE_CONNECTION_NAME = 'sylvan-hydra-464904-d9:us-central1:my-app-db'
     DB_USER = 'appuser'
@@ -88,10 +88,10 @@ pipeline {
             gcloud auth configure-docker asia-south1-docker.pkg.dev --quiet
 
             echo "🐳 Building Docker image..."
-            docker build -t asia-south1-docker.pkg.dev/sylvan-hydra-464904-d9/devops-app/myapp:latest .
+            docker build -t asia-south1-docker.pkg.dev/sylvan-hydra-464904-d9/devops-app/user-management-app:latest .
 
             echo "📦 Pushing Docker image to Artifact Registry..."
-            docker push asia-south1-docker.pkg.dev/sylvan-hydra-464904-d9/devops-app/myapp:latest
+            docker push asia-south1-docker.pkg.dev/sylvan-hydra-464904-d9/devops-app/user-management-app:latest
           '''
         }
       }
