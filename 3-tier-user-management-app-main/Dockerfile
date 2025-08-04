@@ -1,27 +1,25 @@
-FROM python:3.10-slim-bullseye
+# Use official Python base image
+FROM python:3.10-slim
 
-ENV ACCEPT_EULA=Y
-ENV DEBIAN_FRONTEND=noninteractive
+# Set working directory
+WORKDIR /app
 
-# Install system dependencies and ODBC drivers
-RUN apt-get update && \
-    apt-get install -y curl gnupg2 apt-transport-https software-properties-common && \
-    curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
-    curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
-    apt-get update && \
-    ACCEPT_EULA=Y apt-get install -y msodbcsql17 unixodbc-dev gcc g++ && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    default-libmysqlclient-dev gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy dependency files
+COPY requirements.txt .
 
 # Install Python dependencies
-RUN python -m pip install --upgrade pip && \
-    pip install flask mysql-connector-python bcrypt pyodbc
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Optional: verify pyodbc is installed
-RUN python -c "import pyodbc"
+# Copy the application code
+COPY . .
 
-# Copy application code
-COPY . /app
-WORKDIR /app
+# Expose the app port (optional, for testing locally)
+EXPOSE 8080
 
 # Run the app
 CMD ["python", "app.py"]
