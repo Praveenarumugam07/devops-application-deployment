@@ -84,13 +84,13 @@ pipeline {
             echo "🔐 Authenticating to GCP..."
             gcloud auth activate-service-account --key-file=$GCLOUD_KEY
             gcloud config set project sylvan-hydra-464904-d9
-            gcloud auth configure-docker asia-south1-docker.pkg.dev --quiet
+            gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
             echo "🐳 Building Docker image..."
-            docker build -t asia-south1-docker.pkg.dev/sylvan-hydra-464904-d9/devops-app/user-management-app:latest .
+            docker build -t us-central1-docker.pkg.dev/sylvan-hydra-464904-d9/devops-app/user-management-app:latest .
 
             echo "📦 Pushing Docker image to Artifact Registry..."
-            docker push asia-south1-docker.pkg.dev/sylvan-hydra-464904-d9/devops-app/user-management-app:latest
+            docker push us-central1-docker.pkg.dev/sylvan-hydra-464904-d9/devops-app/user-management-app:latest
           '''
         }
       }
