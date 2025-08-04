@@ -1,25 +1,29 @@
-# Use official Python base image
 FROM python:3.10-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies for pyodbc and MySQL
 RUN apt-get update && apt-get install -y \
-    default-libmysqlclient-dev gcc \
+    gcc g++ unixodbc-dev \
+    default-libmysqlclient-dev \
+    curl gnupg \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy dependency files
-COPY requirements.txt .
+# For ODBC Driver (SQL Server support)
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+    && curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update && ACCEPT_EULA=Y apt-get install -y msodbcsql17
 
-# Install Python dependencies
+# Copy and install dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the application code
+# Copy the full application
 COPY . .
 
-# Expose the app port (optional, for testing locally)
+# Expose port (optional)
 EXPOSE 8080
 
-# Run the app
+# Default command
 CMD ["python", "app.py"]
