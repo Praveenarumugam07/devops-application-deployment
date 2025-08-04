@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Stored User Data</title>
     <style>
-        /* Add your custom CSS styles here */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -12,15 +11,12 @@
             background-color: #f7f7f7;
         }
         .navbar {
-            background-color:  rgb(25, 25, 105);
-            color: white;
+            background-color: rgb(25, 25, 105);
             overflow: hidden;
         }
         .navbar a {
             float: left;
-            display: block;
             color: white;
-            text-align: center;
             padding: 14px 16px;
             text-decoration: none;
         }
@@ -29,56 +25,64 @@
             color: black;
         }
         h1 {
-            color: #333;
             text-align: center;
+            color: #333;
             margin-top: 30px;
         }
         table {
-            width: 60%;
+            width: 80%;
             margin: 20px auto;
-            background-color: #fff;
             border-collapse: collapse;
+            background-color: #fff;
         }
         th, td {
             border: 1px solid #ccc;
-            padding: 8px;
+            padding: 10px;
             text-align: left;
         }
         th {
             background-color: #f2f2f2;
         }
+        .no-data {
+            text-align: center;
+            margin-top: 40px;
+            color: #777;
+        }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <a href="/">Home</a>
-        <a href="/get-data">Fetch Data</a>
-    </div>
 
-    <h1>Stored User Data</h1>
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Address</th>
-            <th>Number</th>
-            <th>Password</th>
+<div class="navbar">
+    <a href="/">Home</a>
+    <a href="/get-data">Fetch Data</a>
+</div>
 
+<h1>Stored User Data</h1>
 
-        </tr>
-        {% for row in data %}
-            <tr>
-                <td>{{ row[0] }}</td>
-                <td>{{ row[1] }}</td>
-                <td>{{ row[2] }}</td>
-                <td>{{ row[3] }}</td>
-                <td>{{ row[4] }}</td>
-                <td>{{ row[5] }}</td>
+{% if data %}
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Address</th>
+        <th>Number</th>
+        <th>Password</th> <!-- Consider removing this in production -->
+    </tr>
+    {% for row in data %}
+    <tr>
+        <td>{{ row[0] }}</td>
+        <td>{{ row[1] }}</td>
+        <td>{{ row[2] }}</td>
+        <td>{{ row[3] }}</td>
+        <td>{{ row[4] }}</td>
+        <td>{{ row[5] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p class="no-data">No user data available.</p>
+{% endif %}
 
-
-            </tr>
-        {% endfor %}
-    </table>
 </body>
 </html>
