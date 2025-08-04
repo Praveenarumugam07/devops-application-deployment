@@ -4,6 +4,7 @@ pipeline {
   environment {
     PROJECT_ID = 'sylvan-hydra-464904-d9'
     REGION = 'us-central1'
+    REGION1 = 'asia-south1'
     REPO = 'devops-app'
     IMAGE_NAME = 'user-management-app'
     FULL_IMAGE_NAME = "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${IMAGE_NAME}"
@@ -11,7 +12,7 @@ pipeline {
     DB_USER = 'appuser'
     DB_PASSWORD = 'Praveen@123'
     DB_NAME = 'user_management'
-    SERVICE_NAME = 'user-management-app-service'
+    SERVICE_NAME = 'myapp'
   }
 
   stages {
@@ -130,7 +131,7 @@ pipeline {
             gcloud run deploy ${SERVICE_NAME} \
               --image ${FULL_IMAGE_NAME} \
               --platform managed \
-              --region ${REGION} \
+              --region ${REGION1} \
               --allow-unauthenticated \
               --set-env-vars INSTANCE_CONNECTION_NAME=${INSTANCE_CONNECTION_NAME},DB_USER=${DB_USER},DB_PASSWORD=${DB_PASSWORD},DB_NAME=${DB_NAME}
           '''
