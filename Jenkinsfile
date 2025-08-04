@@ -18,7 +18,8 @@ pipeline {
 
     stage('Stage - 1 - Checkout') {
       steps {
-        git url: 'https://github.com/Praveenarumugam07/devops-application-deployment'
+        git branch: 'main',
+            url: 'https://github.com/Praveenarumugam07/devops-application-deployment'
       }
     }
 
