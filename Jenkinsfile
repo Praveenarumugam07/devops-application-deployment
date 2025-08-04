@@ -25,11 +25,17 @@ pipeline {
 
     stage('Stage - 2 - SonarQube Analysis') {
       environment {
-        SONARQUBE_SCANNER_HOME = tool 'SonarQubeScanner'
+        SONARQUBE_SCANNER_HOME = tool 'SonarQubeScanner' // Matches Jenkins → Global Tool Config
       }
       steps {
-        withSonarQubeEnv('My SonarQube Server') {
-          sh "${env.SONARQUBE_SCANNER_HOME}/bin/sonar-scanner"
+        withSonarQubeEnv('MySonar') { // Matches Jenkins → SonarQube Server Name
+          sh """
+            ${SONARQUBE_SCANNER_HOME}/bin/sonar-scanner \\
+              -Dsonar.projectKey=my-python-app \\
+              -Dsonar.sources=. \\
+              -Dsonar.host.url=http://34.10.18.198:9000 \\
+              -Dsonar.login=squ_545cc0ce58e1b73dfca17e7bce2fb351eff7b953
+          """
         }
       }
     }
@@ -50,9 +56,9 @@ pipeline {
 
     stage('Stage - 5 - Docker Image Security Scan - Trivy') {
       steps {
-        sh '''
+        sh """
           trivy image ${FULL_IMAGE_NAME} --exit-code 0 --severity MEDIUM,HIGH,CRITICAL
-        '''
+        """
       }
     }
 
