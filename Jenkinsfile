@@ -6,7 +6,7 @@ pipeline {
     REGION = 'us-central1'
     REGION1 = 'asia-south1'
     REPO = 'devops-app'
-    IMAGE_NAME = 'user-management-app'
+    IMAGE_NAME = 'myapp'
     FULL_IMAGE_NAME = "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${IMAGE_NAME}"
     INSTANCE_CONNECTION_NAME = 'sylvan-hydra-464904-d9:us-central1:my-app-db'
     DB_USER = 'appuser'
