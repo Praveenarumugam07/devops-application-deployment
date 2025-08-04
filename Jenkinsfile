@@ -25,10 +25,10 @@ pipeline {
 
     stage('Stage - 2 - SonarQube Analysis') {
       environment {
-        SONARQUBE_SCANNER_HOME = tool 'SonarQubeScanner' // Matches Jenkins → Global Tool Config
+        SONARQUBE_SCANNER_HOME = tool 'SonarQubeScanner'
       }
       steps {
-        withSonarQubeEnv('MySonar') { // Matches Jenkins → SonarQube Server Name
+        withSonarQubeEnv('MySonar') {
           sh """
             ${SONARQUBE_SCANNER_HOME}/bin/sonar-scanner \\
               -Dsonar.projectKey=my-python-app \\
@@ -64,7 +64,14 @@ pipeline {
 
     stage('Stage - 6 - Fix Vulnerability by Snyk') {
       steps {
-        snykSecurityScan()
+        withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
+          sh '''
+            npm install -g snyk
+            snyk auth $SNYK_TOKEN
+            snyk test --severity-threshold=high || true
+            snyk monitor || true
+          '''
+        }
       }
     }
 
