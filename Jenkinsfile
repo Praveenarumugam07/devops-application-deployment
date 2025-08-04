@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     PROJECT_ID = 'sylvan-hydra-464904-d9'
-    REGION = 'us-central1'
+    REGION = 'asia-south1'
     REGION1 = 'asia-south1'
     REPO = 'devops-app'
     IMAGE_NAME = 'user-management-app'
