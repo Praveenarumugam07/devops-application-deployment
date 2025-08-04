@@ -1,48 +1,27 @@
 from flask import Flask, render_template, request, redirect, url_for
 import mysql.connector
-import bcrypt
+from mysql.connector import Error
 
 app = Flask(__name__)
 
-# Database configuration for MySQL on GCP
-DATABASE_CONFIG = {
-    'host': '104.155.157.238',          # GCP SQL instance public IP
-    'user': 'appuser',                  # DB username
-    'password': 'Praveen@123',   # Replace with actual password
-    'database': 'user_management'       # DB name
+# Cloud SQL (MySQL) Public IP configuration
+db_config = {
+    'host': '104.155.157.238',       # Your Cloud SQL Public IP
+    'user': 'appuser',               # DB Username
+    'password': 'Praveen@123',       # DB Password
+    'database': 'user_management'    # DB Name
 }
 
-# Function to establish DB connection
-def get_connection():
+# Function to get MySQL connection
+def get_db_connection():
     try:
-        conn = mysql.connector.connect(
-            host=DATABASE_CONFIG['host'],
-            user=DATABASE_CONFIG['user'],
-            password=DATABASE_CONFIG['password'],
-            database=DATABASE_CONFIG['database']
-        )
+        conn = mysql.connector.connect(**db_config)
+        if conn.is_connected():
+            print("✅ Connected to MySQL database!")
         return conn
-    except mysql.connector.Error as err:
-        print(f"❌ Error: {err}")
+    except Error as e:
+        print(f"❌ Error while connecting to MySQL: {e}")
         return None
-
-# Initialize DB table if not exists
-conn = get_connection()
-if conn:
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(255),
-            email VARCHAR(255),
-            address TEXT,
-            phonenumber VARCHAR(20),
-            password VARCHAR(255)
-        )
-    """)
-    conn.commit()
-    cursor.close()
-    conn.close()
 
 @app.route('/')
 def index():
@@ -50,65 +29,62 @@ def index():
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    conn = get_connection()
-    if not conn:
-        return "Database connection failed", 500
-
-    cursor = conn.cursor()
     name = request.form['name']
-    email = request.form['email']
-    address = request.form['address']
-    phonenumber = request.form['phonenumber']
+    age = request.form['age']
+    city = request.form['city']
     
-    password = request.form['password'].encode('utf-8')
-    hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
+    conn = get_db_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO users (name, age, city) VALUES (%s, %s, %s)", (name, age, city))
+            conn.commit()
+            print("✅ Data inserted successfully!")
+        except Error as e:
+            print(f"❌ Error inserting data: {e}")
+        finally:
+            cursor.close()
+            conn.close()
+    return render_template("submitteddata.html", name=name, age=age, city=city)
 
-    insert_query = """
-        INSERT INTO users (name, email, address, phonenumber, password)
-        VALUES (%s, %s, %s, %s, %s)
-    """
-    cursor.execute(insert_query, (name, email, address, phonenumber, hashed_password))
-    conn.commit()
+@app.route('/getdata')
+def getdata():
+    conn = get_db_connection()
+    rows = []
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM users")
+            rows = cursor.fetchall()
+        except Error as e:
+            print(f"❌ Error fetching data: {e}")
+        finally:
+            cursor.close()
+            conn.close()
+    return render_template("get_data.html", rows=rows)
 
-    cursor.execute("SELECT * FROM users ORDER BY id DESC")
-    data = cursor.fetchall()
-    
-    cursor.close()
-    conn.close()
-    return render_template('submitteddata.html', data=data)
-
-@app.route('/get-data', methods=['GET', 'POST'])
-def get_data():
+@app.route('/delete', methods=['GET', 'POST'])
+def delete():
     if request.method == 'POST':
-        input_id = request.form['input_id']
-        conn = get_connection()
-        if not conn:
-            return "Database connection failed", 500
+        user_id = request.form['id']
+        conn = get_db_connection()
+        if conn:
+            try:
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+                conn.commit()
+                print("✅ User deleted successfully!")
+            except Error as e:
+                print(f"❌ Error deleting user: {e}")
+            finally:
+                cursor.close()
+                conn.close()
+        return redirect(url_for('getdata'))
+    return render_template("delete.html")
 
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE id = %s", (input_id,))
-        data = cursor.fetchall()
-        
-        cursor.close()
-        conn.close()
-        return render_template('data.html', data=data, input_id=input_id)
-    return render_template('get_data.html')
-
-@app.route('/delete/<int:id>', methods=['GET', 'POST'])
-def delete_data(id):
-    if request.method == 'POST':
-        conn = get_connection()
-        if not conn:
-            return "Database connection failed", 500
-
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM users WHERE id = %s", (id,))
-        conn.commit()
-        
-        cursor.close()
-        conn.close()
-        return redirect(url_for('get_data'))
-    return render_template('delete.html', id=id)
+@app.route('/data')
+def data():
+    return render_template("data.html")
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8080, host='0.0.0.0')
+    app.run(debug=True)
