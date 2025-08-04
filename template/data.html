@@ -1,1 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fetched Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .navbar {
+            background-color: rgb(25, 25, 105);
+            overflow: hidden;
+        }
+        .navbar a {
+            float: left;
+            color: white;
+            padding: 14px 16px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .navbar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        h1 {
+            margin-top: 20px;
+            color: #333;
+        }
+        table {
+            margin: 20px auto;
+            width: 90%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        a.action-link {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a.action-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
 
+<div class="navbar">
+    <a href="#">TechTrapture User Management</a>
+    <a href="/">Add Data</a>
+</div>
+
+<h1>Fetched Data</h1>
+
+{% if data %}
+    <p>Input ID: {{ input_id }}</p>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Address</th>
+            <th>Phone Number</th>
+            <th>Action</th>
+        </tr>
+        {% for row in data %}
+        <tr>
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }}</td>
+            <td>{{ row[2] }}</td>
+            <td>{{ row[3] }}</td>
+            <td>{{ row[4] }}</td>
+            <td><a class="action-link" href="/delete/{{ row[0] }}">Delete</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No data found for the provided ID.</p>
+{% endif %}
+
+<a class="action-link" href="/">Back to Home</a>
+
+</body>
+</html>
