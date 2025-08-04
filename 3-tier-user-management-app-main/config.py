@@ -1,20 +1,20 @@
 import pyodbc
 
 DATABASE_CONFIG = {
-    'DRIVER': '{ODBC Driver 17 for SQL Server}',  # Make sure this driver is installed
-    'SERVER': '35.192.101.149',  # Cloud SQL Server IP
-    'DATABASE': 'test01',  # Your database name
-    'UID': 'sqlserver',  # Your SQL Server username
-    'PWD': 'svamsi123'  # Your SQL Server password
+    'server': '/cloudsql/sylvan-hydra-464904-d9:us-central1:my-app-db',
+    'database': 'user_management',
+    'username': 'appuser',
+    'password': 'Praveen@123',
+    'driver': '{ODBC Driver 17 for SQL Server}'
 }
 
 try:
     conn = pyodbc.connect(
-        f"DRIVER={DATABASE_CONFIG['DRIVER']};"
-        f"SERVER={DATABASE_CONFIG['SERVER']};"
-        f"DATABASE={DATABASE_CONFIG['DATABASE']};"
-        f"UID={DATABASE_CONFIG['UID']};"
-        f"PWD={DATABASE_CONFIG['PWD']};"
+        f"DRIVER={DATABASE_CONFIG['driver']};"
+        f"SERVER={DATABASE_CONFIG['server']};"
+        f"DATABASE={DATABASE_CONFIG['database']};"
+        f"UID={DATABASE_CONFIG['username']};"
+        f"PWD={DATABASE_CONFIG['password']};"
         "Encrypt=no;"
     )
     print("✅ Database Connection Successful!")
