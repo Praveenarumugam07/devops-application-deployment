@@ -1,91 +1,75 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, request, jsonify, render_template_string
 import mysql.connector
-from mysql.connector import Error
 
 app = Flask(__name__)
 
-# Cloud SQL (MySQL) Public IP configuration
+# MySQL database config
 db_config = {
-    'host': '104.155.157.238',       # Your Cloud SQL Public IP
-    'user': 'appuser',               # DB Username
-    'password': 'Praveen@123',       # DB Password
-    'database': 'user_management'    # DB Name
+    'host': '104.155.157.238',
+    'user': 'appuser',
+    'password': 'Praveen@123',
+    'database': 'user_management'
 }
 
-# Function to get MySQL connection
-def get_db_connection():
-    try:
-        conn = mysql.connector.connect(**db_config)
-        if conn.is_connected():
-            print("✅ Connected to MySQL database!")
-        return conn
-    except Error as e:
-        print(f"❌ Error while connecting to MySQL: {e}")
-        return None
+# HTML template string
+HTML_TEMPLATE = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Management</title>
+</head>
+<body>
+    <h1>Add User</h1>
+    <form method="POST" action="/add">
+        Name: <input type="text" name="name"><br>
+        Age: <input type="number" name="age"><br>
+        City: <input type="text" name="city"><br>
+        <input type="submit" value="Add User">
+    </form>
+    <hr>
+    <h2>All Users</h2>
+    <ul>
+    {% for user in users %}
+        <li>{{ user[1] }} (Age: {{ user[2] }}, City: {{ user[3] }})</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
+'''
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html')
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users")
+    users = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template_string(HTML_TEMPLATE, users=users)
 
-@app.route('/submit', methods=['POST'])
-def submit():
+@app.route('/add', methods=['POST'])
+def add_user():
     name = request.form['name']
     age = request.form['age']
     city = request.form['city']
-    
-    conn = get_db_connection()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO users (name, age, city) VALUES (%s, %s, %s)", (name, age, city))
-            conn.commit()
-            print("✅ Data inserted successfully!")
-        except Error as e:
-            print(f"❌ Error inserting data: {e}")
-        finally:
-            cursor.close()
-            conn.close()
-    return render_template("submitteddata.html", name=name, age=age, city=city)
 
-@app.route('/getdata')
-def getdata():
-    conn = get_db_connection()
-    rows = []
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM users")
-            rows = cursor.fetchall()
-        except Error as e:
-            print(f"❌ Error fetching data: {e}")
-        finally:
-            cursor.close()
-            conn.close()
-    return render_template("get_data.html", rows=rows)
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO users (name, age, city) VALUES (%s, %s, %s)", (name, age, city))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return "User added successfully! <a href='/'>Go back</a>"
 
-@app.route('/delete', methods=['GET', 'POST'])
-def delete():
-    if request.method == 'POST':
-        user_id = request.form['id']
-        conn = get_db_connection()
-        if conn:
-            try:
-                cursor = conn.cursor()
-                cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
-                conn.commit()
-                print("✅ User deleted successfully!")
-            except Error as e:
-                print(f"❌ Error deleting user: {e}")
-            finally:
-                cursor.close()
-                conn.close()
-        return redirect(url_for('getdata'))
-    return render_template("delete.html")
-
-@app.route('/data')
-def data():
-    return render_template("data.html")
+@app.route('/api/users', methods=['GET'])
+def api_get_users():
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users")
+    users = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(users)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
-
