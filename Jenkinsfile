@@ -42,9 +42,7 @@ pipeline {
 
     stage('Stage - 3 - Filesystem Security Scan - Trivy') {
       steps {
-        sh '''
-          trivy fs . --exit-code 0 --severity MEDIUM,HIGH,CRITICAL
-        '''
+        sh 'trivy fs . --exit-code 0 --severity MEDIUM,HIGH,CRITICAL'
       }
     }
 
@@ -56,12 +54,9 @@ pipeline {
 
     stage('Stage - 5 - Docker Image Security Scan - Trivy') {
       steps {
-        sh """
-          trivy image ${FULL_IMAGE_NAME} --exit-code 0 --severity MEDIUM,HIGH,CRITICAL
-        """
+        sh "trivy image ${FULL_IMAGE_NAME} --exit-code 0 --severity MEDIUM,HIGH,CRITICAL"
       }
     }
-
 
     stage('Stage - 6 - Fix Vulnerability by Snyk') {
       steps {
@@ -101,22 +96,30 @@ pipeline {
       steps {
         withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
           sh '''
-            sudo apt-get update && sudo apt-get install -y mysql-client
+            apt-get update && apt-get install -y mysql-client
 
+            echo "📥 Downloading Cloud SQL Proxy..."
             wget -q https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy
             chmod +x cloud_sql_proxy
-            ./cloud_sql_proxy -dir=/cloudsql -instances=${INSTANCE_CONNECTION_NAME} &
+
+            echo "🚀 Starting Cloud SQL Proxy..."
+            mkdir -p /tmp/cloudsql
+            ./cloud_sql_proxy -dir=/tmp/cloudsql -instances=${INSTANCE_CONNECTION_NAME} &
             sleep 10
 
-            echo "Creating table if not exists..."
-            mysql --host=127.0.0.1 --user=${DB_USER} --password=${DB_PASSWORD} --database=${DB_NAME} -e "
-              CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(100),
-                age INT,
-                city VARCHAR(100)
-              );
-            "
+            echo "📋 Creating table if not exists..."
+            mysql --socket=/tmp/cloudsql/${INSTANCE_CONNECTION_NAME} \
+                  --user=${DB_USER} \
+                  --password=${DB_PASSWORD} \
+                  --database=${DB_NAME} \
+                  -e "
+                    CREATE TABLE IF NOT EXISTS users (
+                      id INT AUTO_INCREMENT PRIMARY KEY,
+                      name VARCHAR(100),
+                      age INT,
+                      city VARCHAR(100)
+                    );
+                  "
           '''
         }
       }
